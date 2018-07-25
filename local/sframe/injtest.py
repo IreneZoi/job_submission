@@ -151,35 +151,40 @@ def waitForBatchJobs(nameJobFile):
 def testSignalStrenght(config,toys):
     reader = ConfigReader(config)
     arguments=[]
+    masses = [1200,2000,4000]
+    print arguments
     for i in range(0,len(reader.model)):
-            for p in reader.purities[i]:
-                for m in range(0,int((int(reader.massmax[i])-int(reader.massmin[i]))/100.)):
-                    expSig=[]
-                    f = rt.TFile("CMS_jj_2000_graviton_invM800_de4_13TeV__invMass_afterVBFsel_asymptoticCLs_new.root","READ") # attention root file here must be calculated from workspace below!!!
+#            for p in reader.purities[i]:
+      print "model "+reader.model[i]
+#      for m in range(0,int((int(reader.massmax[i])-int(reader.massmin[i]))/100.)):
+      for mass in masses:#range(0,int((int(reader.massmax[i])-int(reader.massmin[i]))/100.)):
+        expSig=[]
+        #mass = str(m*100+int(reader.massmin[i]))
+        print "mass "+str(mass)
+        f = rt.TFile(reader.inDir[i]+"CMS_jj_"+str(mass)+"_graviton_invM800_de4_13TeV__invMass_afterVBFsel_asymptoticCLs_new.root","READ") # attention root file here must be calculated from workspace below!!!
 #                    f = rt.TFile("/home/dschaefer/Limits3DFit/pythia/pythia_tau21DDT_WprimeWZ_obs.root","READ") # attention root file here must be calculated from workspace below!!!
-                    mass = str(m*100+int(reader.massmin[i]))
-                    limit=f.Get("limit")
-                    lim=0
-                    for event in limit:
-                        #print event.mh
-                        if int(event.mh)!=int(mass):
-                            continue
-                        if event.quantileExpected>0.974 and event.quantileExpected<0.976:            
-                            lim=event.limit
-                            print lim
-                    for counter in range(0,10):
-                        expSig.append(round(0.0+counter*lim*2.5/10.,3))
-                    print expSig
-                    for sig in expSig:
-                        if reader.opt[i] == "3D":
-                            workspace = "workspace_pythia.root"
-                            outname="biasTest_r"+str(float(sig))+"_pythia_tau21DDT_"+reader.model[i]+"_13TeV_CMS_jj_"+p+"_M"+mass+".root"
-                        arguments.append(reader.inDir[i]+" "+workspace+" "+mass+" "+outname+" "+str(toys)+" "+str(sig))
-
-    writeJDL(arguments,1500,30*60,"significance.sh")
-    command = "condor_submit significance.submit"
-    process = subprocess.Popen(command,shell=True)
-    waitForBatchJobs("significance.sh")
+        limit=f.Get("limit")
+        lim=0
+        for event in limit:
+#          print event.mh
+          if int(event.mh)!=int(mass):
+            continue
+          if event.quantileExpected>0.974 and event.quantileExpected<0.976:            
+            lim=event.limit
+            print "limit at -2 sigma "+str(lim)
+            for counter in range(0,10):
+              expSig.append(round(0.0+counter*lim*2.5/10.,3))
+              print "expSig "+str(expSig)
+              for sig in expSig:
+                #                        if reader.opt[i] == "3D":
+                workspace = reader.inDir[i]+"CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
+                outname="biasTest_r"+str(float(sig))+"_"+reader.model[i]+"_13TeV_CMS_jj_M"+str(mass)+".root"
+                arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig))
+                
+    # writeJDL(arguments,1500,30*60,"significance.sh")
+    # command = "condor_submit significance.submit"
+    # process = subprocess.Popen(command,shell=True)
+    # waitForBatchJobs("significance.sh")
 
 
 
@@ -195,7 +200,7 @@ def fitInjectedSignal(config,signal,toys):
                     sig = g.Eval(3)  # inject signal with 3 sigma significance!
                     if reader.opt[i] == "3D":
                             workspace = "workspace_pythia.root"
-                            outname="biasTest_MaxLikelihood_r"+str(int(sig))+"_pythia_tau21DDT_"+reader.model[i]+"_13TeV_CMS_jj_"+p+"_M"+mass+".root"
+                            outname="biasTest_MaxLikelihood_r"+str(int(sig))+"_pythia_tau21DDT_"+reader.model[i]+"_13TeV_CMS_jj_"+p+"_M"+str(mass)+".root"
                     arguments.append(reader.inDir[i]+" "+workspace+" "+mass+" "+outname+" "+str(toys)+" "+str(sig))
 
     writeJDL(arguments,1500,30*60,"injecteSignal.sh")
@@ -277,7 +282,7 @@ if __name__=="__main__":
     
     print options.jobOptions
    
-    #py batchsubmission.py --scanSig -t 100
+    #python injtest.py --scanSig -t 100
     if options.scanSignificance:
         testSignalStrenght("bulkG.cfg",options.toys)
         #waitForBatchJobs("bias.sh")
