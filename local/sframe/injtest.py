@@ -85,13 +85,24 @@ class ConfigReader:
 
 
  
-def writeJDL(arguments,mem,time,name):
-    #jobs = JDLCreator('condocker')  #run jobs on condocker cloude site
-    jobs = JDLCreator('condocker') # matthias schnepf told me i don't need this after all! (23.01.18)
-    jobs.wall_time = time
-    jobs.memory = mem 
-    jobs.requirements = "(TARGET.ProvidesCPU) && (TARGET.ProvidesEkpResources)"
-    jobs.accounting_group = "cms.top"
+def writeSUBMIT(arguments,mem,time,name,mass,sig):
+  text_file = open(name+str(mass)+"_"+str(sig)+".submit", "w")
+  text_file.write("request_memory = "+str(mem)+" GB\n")
+#  text_file.write("requirements = (TARGET.ProvidesCPU) && (TARGET.ProvidesEkpResources)\n")
+  text_file.write("executable =  "+name+".sh \n")
+  text_file.write("arguments = {0} \n".format( arguments[0]  ))
+  text_file.write("log = job"+str(mass)+"_"+str(sig)+".log \n")
+  text_file.write("output =  job"+str(mass)+"_"+str(sig)+".out\n")
+  text_file.write("error = job"+str(mass)+"_"+str(sig)+".err\n")
+  text_file.write("queue 1\n")
+  text_file.close()
+
+
+
+
+
+
+ 
     ##################################
     ## submit job to set up CMSSW 
     ##################################
@@ -103,10 +114,11 @@ def writeJDL(arguments,mem,time,name):
     ##################################
     # submit job to run combine
     ##################################
-    jobs.SetExecutable(name)  # set job script
-    #jobs.SetFolder('/usr/users/dschaefer/job_submission/local/sframe')  # set subfolder !!! you have to copy your job file into the folder
-    jobs.SetArguments(arguments)              # write an JDL file and create folder f            # set arguments
-    jobs.WriteJDL() # write an JDL file and create folder for log files
+
+    # jobs.SetExecutable(name)  # set job script
+    # #jobs.SetFolder('/usr/users/dschaefer/job_submission/local/sframe')  # set subfolder !!! you have to copy your job file into the folder
+    # jobs.SetArguments(arguments)              # write an JDL file and create folder f            # set arguments
+    # jobs.WriteSUBMIT() # write an JDL file and create folder for log files
 
 
         
@@ -115,10 +127,10 @@ def waitForBatchJobs(nameJobFile):
     timeCheck = 10 #delay for process check
     while (True):
         time.sleep(timeCheck)
-        proc = subprocess.Popen(["(condor_q dschaefer | grep "+nameJobFile+" )"], stdout=subprocess.PIPE, shell=True)
+        proc = subprocess.Popen(["(condor_q zoiirene | grep "+nameJobFile+" )"], stdout=subprocess.PIPE, shell=True)
         (query, err) = proc.communicate()
         print "program output:", query
-        if query.find("dschaefer")==-1:
+        if query.find("zoiirene")==-1:
             break
         listOfJobs = query.split('\n')
         #print listOfJobs
@@ -150,9 +162,7 @@ def waitForBatchJobs(nameJobFile):
  
 def testSignalStrenght(config,toys):
     reader = ConfigReader(config)
-    arguments=[]
     masses = [1200,2000,4000]
-    print arguments
     for i in range(0,len(reader.model)):
 #            for p in reader.purities[i]:
       print "model "+reader.model[i]
@@ -177,14 +187,18 @@ def testSignalStrenght(config,toys):
               print "expSig "+str(expSig)
               for sig in expSig:
                 #                        if reader.opt[i] == "3D":
-                workspace = reader.inDir[i]+"CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
+                workspace = "CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
                 outname="biasTest_r"+str(float(sig))+"_"+reader.model[i]+"_13TeV_CMS_jj_M"+str(mass)+".root"
-                arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig))
+                datacard="CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV__invMass_afterVBFsel.txt"
+                arguments=[]
+                arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig)+" "+datacard)
+                print arguments
+
                 
-    # writeJDL(arguments,1500,30*60,"significance.sh")
-    # command = "condor_submit significance.submit"
-    # process = subprocess.Popen(command,shell=True)
-    # waitForBatchJobs("significance.sh")
+                writeSUBMIT(arguments,1.5,30*60,"significance",mass,sig) #1.5 GB = 1500 dani 
+                command = "condor_submit significance"+str(mass)+"_"+str(sig)+".submit"
+                process = subprocess.Popen(command,shell=True)
+                waitForBatchJobs("significance.sh")
 
 
 
@@ -203,7 +217,7 @@ def fitInjectedSignal(config,signal,toys):
                             outname="biasTest_MaxLikelihood_r"+str(int(sig))+"_pythia_tau21DDT_"+reader.model[i]+"_13TeV_CMS_jj_"+p+"_M"+str(mass)+".root"
                     arguments.append(reader.inDir[i]+" "+workspace+" "+mass+" "+outname+" "+str(toys)+" "+str(sig))
 
-    writeJDL(arguments,1500,30*60,"injecteSignal.sh")
+    writeJDL(arguments,1.5,30*60,"injecteSignal.sh") #1.5 GB = 1500 dani
     command = "condor_submit injecteSignal.submit"
     process = subprocess.Popen(command,shell=True)
     waitForBatchJobs("injecteSignal.sh")
