@@ -98,7 +98,7 @@ if __name__=="__main__":
             c.SaveAs("scanSignalStrength_"+str(int(mass))+".pdf")                                                                  
             g.SetName(str(int(mass)))                                                                  
             graphs.append(g)                                                                 
-      out = ROOT.TFile("scanSignalStrength.root","RECREATE")                                                                  
+      out = ROOT.TFile("scanSignalStrength_"+str(int(mass))+".root","RECREATE")                                                                  
       for g in graphs:                                                                        
             g.Write()
       
