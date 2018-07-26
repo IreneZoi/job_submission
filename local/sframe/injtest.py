@@ -1,4 +1,5 @@
 #! /usr/bin/python
+# usage python injtest.py --scanSig -t 100
 import sys
 import os
 import optparse
@@ -8,7 +9,6 @@ import platform
 from copy import deepcopy
 import subprocess
 import ROOT as rt
-
 # check for python version
 if platform.python_version() < "2.5.1":
   print "FATAL: you need a newer python version"
@@ -205,23 +205,36 @@ def testSignalStrenght(config,toys):
 def fitInjectedSignal(config,signal,toys):
     reader = ConfigReader(config)
     arguments=[]
+    masses = [1200,2000,4000]
     for i in range(0,len(reader.model)):
-            for p in reader.purities[i]:
-                for m in range(0,int((int(reader.massmax[i])-int(reader.massmin[i]))/100.)):
-                    f = rt.TFile(signal,"READ")
-                    mass = str(m*100+int(reader.massmin[i]))
-                    g = f.Get(mass)
-                    sig = g.Eval(3)  # inject signal with 3 sigma significance!
-                    if reader.opt[i] == "3D":
-                            workspace = "workspace_pythia.root"
-                            outname="biasTest_MaxLikelihood_r"+str(int(sig))+"_pythia_tau21DDT_"+reader.model[i]+"_13TeV_CMS_jj_"+p+"_M"+str(mass)+".root"
-                    arguments.append(reader.inDir[i]+" "+workspace+" "+mass+" "+outname+" "+str(toys)+" "+str(sig))
-
-    writeJDL(arguments,1.5,30*60,"injecteSignal.sh") #1.5 GB = 1500 dani
-    command = "condor_submit injecteSignal.submit"
-    process = subprocess.Popen(command,shell=True)
-    waitForBatchJobs("injecteSignal.sh")
+#      for m in range(0,int((int(reader.massmax[i])-int(reader.massmin[i]))/100.)):
+      for mass  in masses:
+        print mass
+        filename = signal+"_"+str(int(mass))+".root"
+        print filename
+        f = rt.TFile(filename,"READ")
+#        mass = str(m*100+int(reader.massmin[i]))
+#        g = rt.TGraph(f.Get(mass))
+#        g = f.GetObject(str(mass),rt.TGraph)
+#        g = rt.TGraph(f.GetObject(str(mass),rt.TGraph) )
+        g = f.Get(str(mass))
+        sig = g.Eval(3)  # inject signal with 3 sigma significance!
+        print "signal injected for 3 sigma significance is "+str(sig)
+        outname="biasTest_MaxLikelihood_r"+str(int(sig))+"_"+reader.model[i]+"_13TeV_CMS_jj_M"+str(mass)+".root"
+        workspace = "CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
+        datacard="CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV__invMass_afterVBFsel.txt"
+        arguments=[]
+        arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig)+" "+datacard)
+        print arguments
+    # writeJDL(arguments,1.5,30*60,"injecteSignal.sh") #1.5 GB = 1500 dani
+    # command = "condor_submit injecteSignal.submit"
+    # process = subprocess.Popen(command,shell=True)
+    # waitForBatchJobs("injecteSignal.sh")
  
+        writeSUBMIT(arguments,1.5,30*60,"injecteSignal",mass,sig) #1.5 GB = 1500 dani 
+        command = "condor_submit injecteSignal"+str(mass)+"_"+str(sig)+".submit"
+        process = subprocess.Popen(command,shell=True)
+        waitForBatchJobs("injecteSignal.sh")
  
  
  
@@ -301,6 +314,6 @@ if __name__=="__main__":
         testSignalStrenght("bulkG.cfg",options.toys)
         #waitForBatchJobs("bias.sh")
     
-    #py batchsubmission.py --injectSig --toys 200 --signal /home/dschaefer/Limits3DFit/biasTest/scanSignalStrength.root
+    #python injtest.py --injectSig --toys 200 --signal scanSignalStrength
     if options.injectSignal:
         fitInjectedSignal("bulkG.cfg",options.signal,options.toys)
