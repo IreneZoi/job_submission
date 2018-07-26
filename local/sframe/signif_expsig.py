@@ -1,5 +1,7 @@
 #usage:
-#python /home/dschaefer/Limits3D/biasTest/scanSignalStrength.py --mass 1200,1300,1400,1500,1700,1800,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,2100,3200,3300 ,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,1900,1600 
+#python signif_expsig.py --mass 1200 -l 0.0,0.169,0.056,0.113,0.132,0.15,0.094,0.038,0.075,0.019 
+#python signif_expsig.py --mass 2000 -l 0.0,0.06,0.053,0.04,0.033,0.013,0.046,0.02,0.027,0.007
+#python signif_expsig.py --mass 4000 -l 0.0,0.063,0.045,0.08,0.072,0.054,0.027,0.018,0.036,0.009
 import ROOT
 
 ROOT.gROOT.SetBatch(True)
@@ -53,9 +55,12 @@ if __name__=="__main__":
             l={}                  
             err={}                 
             if options.LexpSig!="":                       
-                  for s in signal:                       
-                        filename = "biasTest_r"+str(int(s))+"_pythia_tau21DDT_WprimeWZ_13TeV_CMS_jj_HPHP_M"+mass+".root"                 
-                        ldist = getLimit(filename)
+                  for s in signal: 
+                        print s
+                        directory = "graviton_"+str(int(mass))+"_"+str(s)+"/"
+                        print directory
+                        filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".123456.root"                 
+                        ldist = getLimit(directory+filename)
                         print ldist                                         
                         print numpy.mean(ldist)                  
                         g.SetPoint(i,s,numpy.mean(ldist))                                          
@@ -90,7 +95,7 @@ if __name__=="__main__":
             g.GetXaxis().SetTitle("significance")                                                                 
             g.GetYaxis().SetTitle("signal strength")                                                                  
             g.Draw("ALP")                                                                  
-            c.SaveAs("scanSignalStrength_"+str(mass)+".pdf")                                                                  
+            c.SaveAs("scanSignalStrength_"+str(int(mass))+".pdf")                                                                  
             g.SetName(str(int(mass)))                                                                  
             graphs.append(g)                                                                 
       out = ROOT.TFile("scanSignalStrength.root","RECREATE")                                                                  
