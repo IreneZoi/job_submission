@@ -91,9 +91,9 @@ def writeSUBMIT(arguments,mem,time,name,mass,sig):
 #  text_file.write("requirements = (TARGET.ProvidesCPU) && (TARGET.ProvidesEkpResources)\n")
   text_file.write("executable =  "+name+".sh \n")
   text_file.write("arguments = {0} \n".format( arguments[0]  ))
-  text_file.write("log = job"+str(mass)+"_"+str(sig)+".log \n")
-  text_file.write("output =  job"+str(mass)+"_"+str(sig)+".out\n")
-  text_file.write("error = job"+str(mass)+"_"+str(sig)+".err\n")
+  text_file.write("log = graviton_"+str(mass)+"_"+str(sig)+"/job"+str(mass)+"_"+str(sig)+".log \n")
+  text_file.write("output =  graviton_"+str(mass)+"_"+str(sig)+"/job"+str(mass)+"_"+str(sig)+".out\n")
+  text_file.write("error = graviton_"+str(mass)+"_"+str(sig)+"/job"+str(mass)+"_"+str(sig)+".err\n")
   text_file.write("queue 1\n")
   text_file.close()
 
@@ -310,10 +310,12 @@ if __name__=="__main__":
     print options.jobOptions
    
     #python injtest.py --scanSig -t 100
+    #python injtest.py --scanSig -t -1
     if options.scanSignificance:
         testSignalStrenght("bulkG.cfg",options.toys)
         #waitForBatchJobs("bias.sh")
     
     #python injtest.py --injectSig --toys 200 --signal scanSignalStrength
+    #python injtest.py --injectSig --toys -1 --signal scanSignalStrength
     if options.injectSignal:
         fitInjectedSignal("bulkG.cfg",options.signal,options.toys)
