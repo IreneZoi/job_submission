@@ -37,7 +37,8 @@
 	
 	
 	echo "combine -m ${3} -M ProfileLikelihood ${2} --significance --expectSignal=${6} -t ${5} --toysFrequentist --name ${4}"	 
-        combine -m ${3} -M ProfileLikelihood ${7} --significance --expectSignal=${6} -t ${5} --toysFrequentist #--run blind --verbose 3 #--rAbsAcc 0.00001 --rRelAcc 0.00001
+        combine -m ${3} -M ProfileLikelihood ${7} --significance --expectSignal=${6} -t ${5} #--run blind --verbose 3 #--rAbsAcc 0.00001 --rRelAcc 0.00001
+#        combine -m ${3} -M ProfileLikelihood ${7} --significance --expectSignal=${6} -t ${5} --toysFrequentist #--run blind --verbose 3 #--rAbsAcc 0.00001 --rRelAcc 0.00001
         #mv  higgs*.root $1/Limits/$4
 	#mv higgs*.root ${1}/Output/ #${4}
 
