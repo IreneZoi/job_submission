@@ -1,8 +1,10 @@
 #! /usr/bin/python
 # python injtest.py --scanSig -t 100
-# python injtest.py --scanSig -t -1   
+# python injtest.py --scanSig -t -1 -r radion  
+# python injtest.py --scanSig -t -1 -r graviton  
 # python injtest.py --injectSig --toys 200 --signal scanSignalStrength
-# python injtest.py --injectSig --toys -1 --signal scanSignalStrength
+# python injtest.py --injectSig --toys -1 --signal scanSignalStrength -r radion
+# python injtest.py --injectSig --toys -1 --signal scanSignalStrength -r graviton
 import sys
 import os
 import optparse
@@ -88,15 +90,15 @@ class ConfigReader:
 
 
  
-def writeSUBMIT(arguments,mem,time,name,mass,sig):
-  text_file = open(name+str(mass)+"_"+str(sig)+".submit", "w")
+def writeSUBMIT(arguments,mem,time,name,mass,sig,config):
+  text_file = open(name+"_"+config+"_"+str(mass)+"_"+str(sig)+".submit", "w")
   text_file.write("request_memory = "+str(mem)+" GB\n")
 #  text_file.write("requirements = (TARGET.ProvidesCPU) && (TARGET.ProvidesEkpResources)\n")
   text_file.write("executable =  "+name+".sh \n")
   text_file.write("arguments = {0} \n".format( arguments[0]  ))
-  text_file.write("log = job"+str(mass)+"_"+str(sig)+".log \n")
-  text_file.write("output =  job"+str(mass)+"_"+str(sig)+".out\n")
-  text_file.write("error = job"+str(mass)+"_"+str(sig)+".err\n")
+  text_file.write("log = job_"+config+"_"+str(mass)+"_"+str(sig)+".log \n")
+  text_file.write("output =  job_"+config+"_"+str(mass)+"_"+str(sig)+".out\n")
+  text_file.write("error = job_"+config+"_"+str(mass)+"_"+str(sig)+".err\n")
   text_file.write("queue 1\n")
   text_file.close()
 
@@ -164,7 +166,7 @@ def waitForBatchJobs(nameJobFile):
 
  
 def testSignalStrenght(config,toys):
-    reader = ConfigReader(config)
+    reader = ConfigReader(config+".cfg")
     masses = [1200,2000,4000]
     for i in range(0,len(reader.model)):
 #            for p in reader.purities[i]:
@@ -174,7 +176,7 @@ def testSignalStrenght(config,toys):
         expSig=[]
         #mass = str(m*100+int(reader.massmin[i]))
         print "mass "+str(mass)
-        f = rt.TFile(reader.inDir[i]+"CMS_jj_"+str(mass)+"_graviton_invM800_de45_13TeV__invMass_combined_asymptoticCLs_new.root","READ") # attention root file here must be calculated from workspace below!!!
+        f = rt.TFile(reader.inDir[i]+"CMS_jj_"+str(mass)+"_"+config+"_invM800_de45_13TeV__invMass_combined_asymptoticCLs_new.root","READ") # attention root file here must be calculated from workspace below!!!
 #                    f = rt.TFile("/home/dschaefer/Limits3DFit/pythia/pythia_tau21DDT_WprimeWZ_obs.root","READ") # attention root file here must be calculated from workspace below!!!
         limit=f.Get("limit")
         lim=0
@@ -190,30 +192,30 @@ def testSignalStrenght(config,toys):
               print "expSig "+str(expSig)
               for sig in expSig:
                 #                        if reader.opt[i] == "3D":
-                workspace = "CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
+                workspace = "CMS_jj_"+config+"_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
                 outname="biasTest_r"+str(float(sig))+"_"+reader.model[i]+"_13TeV_CMS_jj_M"+str(mass)+".root"
-                datacard="CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV__invMass_combined.txt"
+                datacard="CMS_jj_"+config+"_invM800_de45_"+str(mass)+"_13TeV__invMass_combined.txt"
                 arguments=[]
-                arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig)+" "+datacard)
+                arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig)+" "+datacard+" "+config)
                 print arguments
 
                 
-                writeSUBMIT(arguments,1.5,30*60,"significance",mass,sig) #1.5 GB = 1500 dani 
-                command = "condor_submit significance"+str(mass)+"_"+str(sig)+".submit"
+                writeSUBMIT(arguments,1.5,30*60,"significance",mass,sig,config) #1.5 GB = 1500 dani 
+                command = "condor_submit significance_"+config+"_"+str(mass)+"_"+str(sig)+".submit"
                 process = subprocess.Popen(command,shell=True)
                 waitForBatchJobs("significance.sh")
 
 
 
 def fitInjectedSignal(config,signal,toys):
-    reader = ConfigReader(config)
+    reader = ConfigReader(config+".cfg")
     arguments=[]
     masses = [1200,2000,4000]
     for i in range(0,len(reader.model)):
 #      for m in range(0,int((int(reader.massmax[i])-int(reader.massmin[i]))/100.)):
       for mass  in masses:
         print mass
-        filename = signal+"_"+str(int(mass))+".root"
+        filename = signal+"_"+config+"_"+str(int(mass))+".root"
         print filename
         f = rt.TFile(filename,"READ")
 #        mass = str(m*100+int(reader.massmin[i]))
@@ -224,18 +226,18 @@ def fitInjectedSignal(config,signal,toys):
         sig = g.Eval(3)  # inject signal with 3 sigma significance!
         print "signal injected for 3 sigma significance is "+str(sig)
         outname="biasTest_MaxLikelihood_r"+str(int(sig))+"_"+reader.model[i]+"_13TeV_CMS_jj_M"+str(mass)+".root"
-        workspace = "CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
-        datacard="CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV__invMass_combined.txt"
+        workspace = "CMS_jj_"+config+"_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
+        datacard="CMS_jj_"+config+"_invM800_de45_"+str(mass)+"_13TeV__invMass_combined.txt"
         arguments=[]
-        arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig)+" "+datacard)
+        arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig)+" "+datacard+" "+config)
         print arguments
     # writeJDL(arguments,1.5,30*60,"injecteSignal.sh") #1.5 GB = 1500 dani
     # command = "condor_submit injecteSignal.submit"
     # process = subprocess.Popen(command,shell=True)
     # waitForBatchJobs("injecteSignal.sh")
  
-        writeSUBMIT(arguments,1.5,30*60,"injecteSignal",mass,sig) #1.5 GB = 1500 dani 
-        command = "condor_submit injecteSignal"+str(mass)+"_"+str(sig)+".submit"
+        writeSUBMIT(arguments,1.5,30*60,"injecteSignal",mass,sig,config) #1.5 GB = 1500 dani 
+        command = "condor_submit injecteSignal_"+config+"_"+str(mass)+"_"+str(sig)+".submit"
         process = subprocess.Popen(command,shell=True)
         waitForBatchJobs("injecteSignal.sh")
  
@@ -305,6 +307,10 @@ if __name__=="__main__":
     optparser.add_option("-t", "--toys", dest="toys",
                     action="store", default=10,
                     help="calculate toys [default = 10]")
+
+    optparser.add_option("-r", "--resonance", dest="resonance",
+                    action="store", default="radion",
+                    help="resonance to be used [default = radion]")
     
     
     (options, args)=optparser.parse_args()
@@ -315,10 +321,11 @@ if __name__=="__main__":
     #python injtest.py --scanSig -t 100
     #python injtest.py --scanSig -t -1
     if options.scanSignificance:
-        testSignalStrenght("bulkG.cfg",options.toys)
+        testSignalStrenght(options.resonance,options.toys)
+#        testSignalStrenght("bulkG.cfg",options.toys)
         #waitForBatchJobs("bias.sh")
     
     #python injtest.py --injectSig --toys 200 --signal scanSignalStrength
     #python injtest.py --injectSig --toys -1 --signal scanSignalStrength
     if options.injectSignal:
-        fitInjectedSignal("bulkG.cfg",options.signal,options.toys)
+        fitInjectedSignal(options.resonance,options.signal,options.toys)

@@ -1,7 +1,12 @@
 #usage:
-# python signif_expsig.py --mass 1200 -l 0.0,0.017,0.033,0.05,0.066,0.083,0.1,0.116,0.133,0.15 
-# python signif_expsig.py --mass 2000 -l 0.0,0.004,0.008,0.012,0.016,0.02,0.024,0.028,0.033,0.037
-# python signif_expsig.py --mass 4000 -l 0.0,0.002,0.004,0.006,0.008,0.01,0.012,0.014,0.016,0.018
+# python signif_expsig.py --mass 1200 -l 0.0,0.017,0.033,0.05,0.066,0.083,0.1,0.116,0.133,0.15 -r "graviton"
+# python signif_expsig.py --mass 2000 -l 0.0,0.004,0.008,0.012,0.016,0.02,0.024,0.028,0.033,0.037 -r "graviton"
+# python signif_expsig.py --mass 4000 -l 0.0,0.002,0.004,0.006,0.008,0.01,0.012,0.014,0.016,0.018 -r "graviton"
+
+# python signif_expsig.py --mass 1200 -l 0.0,0.012,0.023,0.035,0.047,0.059,0.07,0.082,0.094,0.106 -r "radion"
+# python signif_expsig.py --mass 2000 -l 0.0,0.003,0.006,0.009,0.012,0.015,0.018,0.021,0.024,0.027 -r "radion"
+# python signif_expsig.py --mass 4000 -l 0.0,0.002,0.003,0.005,0.006,0.008,0.009,0.011,0.012,0.014 -r "radion"
+
 import ROOT
 
 ROOT.gROOT.SetBatch(True)
@@ -14,6 +19,7 @@ parser = optparse.OptionParser()
 parser.add_option("-m","--mass",dest="mass",help="mass of input ROOT File",default='')
 parser.add_option("-s","--expSig",dest="expSig",help="signal strenghts",default='')
 parser.add_option("-l","--LexpSig",dest="LexpSig",help="list of signal strenghts",default='')
+parser.add_option("-r","--resonance",dest="resonance",help="radion or graviton",default="radion")
 
 (options,args) = parser.parse_args()
   
@@ -49,6 +55,7 @@ if __name__=="__main__":
       
       signal = getExpSig(options.LexpSig)
       masses = getExpSig(options.mass) 
+      res = options.resonance
       graphs=[]         
       for mass in masses:                        
             g = ROOT.TGraphErrors()                  
@@ -58,7 +65,7 @@ if __name__=="__main__":
             if options.LexpSig!="":              
                   for s in signal: 
                         print s
-                        directory = "graviton_"+str(int(mass))+"_"+str(s)+"/"
+                        directory = res+"_"+str(int(mass))+"_"+str(s)+"/"
                         print directory
                         filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".root"                 
 #                        filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".123456.root"                 
@@ -99,10 +106,10 @@ if __name__=="__main__":
             g.GetXaxis().SetTitle("significance")                                                                 
             g.GetYaxis().SetTitle("signal strength")                                                                  
             g.Draw("ALP")                                                                  
-            c.SaveAs("scanSignalStrength_"+str(int(mass))+".pdf")                                                                  
+            c.SaveAs("scanSignalStrength_"+res+"_"+str(int(mass))+".pdf")                                                                  
             g.SetName(str(int(mass)))                                                                  
             graphs.append(g)                                                                 
-      out = ROOT.TFile("scanSignalStrength_"+str(int(mass))+".root","RECREATE")                                                                  
+      out = ROOT.TFile("scanSignalStrength_"+res+"_"+str(int(mass))+".root","RECREATE")                                                                  
       for g in graphs:                                                                        
             g.Write()
       
