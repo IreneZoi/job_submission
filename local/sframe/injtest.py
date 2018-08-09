@@ -1,8 +1,8 @@
 #! /usr/bin/python
-#python injtest.py --scanSig -t 100
-#python injtest.py --scanSig -t -1   
-#python injtest.py --injectSig --toys 200 --signal scanSignalStrength
-#python injtest.py --injectSig --toys -1 --signal scanSignalStrength
+# python injtest.py --scanSig -t 100
+# python injtest.py --scanSig -t -1   
+# python injtest.py --injectSig --toys 200 --signal scanSignalStrength
+# python injtest.py --injectSig --toys -1 --signal scanSignalStrength
 import sys
 import os
 import optparse
@@ -174,7 +174,7 @@ def testSignalStrenght(config,toys):
         expSig=[]
         #mass = str(m*100+int(reader.massmin[i]))
         print "mass "+str(mass)
-        f = rt.TFile(reader.inDir[i]+"CMS_jj_"+str(mass)+"_graviton_invM800_de4_13TeV__invMass_afterVBFsel_asymptoticCLs_new.root","READ") # attention root file here must be calculated from workspace below!!!
+        f = rt.TFile(reader.inDir[i]+"CMS_jj_"+str(mass)+"_graviton_invM800_de45_13TeV__invMass_combined_asymptoticCLs_new.root","READ") # attention root file here must be calculated from workspace below!!!
 #                    f = rt.TFile("/home/dschaefer/Limits3DFit/pythia/pythia_tau21DDT_WprimeWZ_obs.root","READ") # attention root file here must be calculated from workspace below!!!
         limit=f.Get("limit")
         lim=0
@@ -192,7 +192,7 @@ def testSignalStrenght(config,toys):
                 #                        if reader.opt[i] == "3D":
                 workspace = "CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
                 outname="biasTest_r"+str(float(sig))+"_"+reader.model[i]+"_13TeV_CMS_jj_M"+str(mass)+".root"
-                datacard="CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV__invMass_afterVBFsel.txt"
+                datacard="CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV__invMass_combined.txt"
                 arguments=[]
                 arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig)+" "+datacard)
                 print arguments
@@ -225,7 +225,7 @@ def fitInjectedSignal(config,signal,toys):
         print "signal injected for 3 sigma significance is "+str(sig)
         outname="biasTest_MaxLikelihood_r"+str(int(sig))+"_"+reader.model[i]+"_13TeV_CMS_jj_M"+str(mass)+".root"
         workspace = "CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV.root"#"workspace_pythia.root"
-        datacard="CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV__invMass_afterVBFsel.txt"
+        datacard="CMS_jj_graviton_invM800_de45_"+str(mass)+"_13TeV__invMass_combined.txt"
         arguments=[]
         arguments.append(reader.inDir[i]+" "+workspace+" "+str(mass)+" "+outname+" "+str(toys)+" "+str(sig)+" "+datacard)
         print arguments

@@ -28,11 +28,13 @@
 
 	# go back to work directory
 	cd ${SPAWNPOINT}
-	
+	mkdir graviton_${3}_${6}
         cd graviton_${3}_${6}
 	# copy needed files
 	cp ../scanSignalStrength_${3}.root .
-	
+	cp ../CMS_jj_bkg_VV_invM800_de45_${3}_13TeV.root .
+	cp ../CMS_jj_graviton_invM800_de45_${3}_13TeV.root .
+	cp ../CMS_jj_graviton_invM800_de45_${3}_13TeV__invMass_combined.txt .
  
 	echo "combine -m ${3} -M MaxLikelihoodFit ${7} --significance --expectSignal=${6} -t ${5} --rMax 100"	 
         combine -m ${3} -M MaxLikelihoodFit ${7} --significance --expectSignal=${6} -t ${5} --rMax 100 #--run blind --verbose 3 #--rAbsAcc 0.00001 --rRelAcc 0.00001

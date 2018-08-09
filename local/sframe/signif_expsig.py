@@ -1,7 +1,7 @@
 #usage:
-#python signif_expsig.py --mass 1200 -l 0.0,0.169,0.056,0.113,0.132,0.15,0.094,0.038,0.075,0.019 
-#python signif_expsig.py --mass 2000 -l 0.0,0.06,0.053,0.04,0.033,0.013,0.046,0.02,0.027,0.007
-#python signif_expsig.py --mass 4000 -l 0.0,0.063,0.045,0.08,0.072,0.054,0.027,0.018,0.036,0.009
+# python signif_expsig.py --mass 1200 -l 0.0,0.017,0.033,0.05,0.066,0.083,0.1,0.116,0.133,0.15 
+# python signif_expsig.py --mass 2000 -l 0.0,0.004,0.008,0.012,0.016,0.02,0.024,0.028,0.033,0.037
+# python signif_expsig.py --mass 4000 -l 0.0,0.002,0.004,0.006,0.008,0.01,0.012,0.014,0.016,0.018
 import ROOT
 
 ROOT.gROOT.SetBatch(True)
@@ -39,6 +39,7 @@ def getExpSig(expSig):
             s=[]                  
             for e in exp:                        
                   s.append(float(e))
+                  print e
             return s
       return 0
 
@@ -54,17 +55,20 @@ if __name__=="__main__":
             i=0               
             l={}                  
             err={}                 
-            if options.LexpSig!="":                       
+            if options.LexpSig!="":              
                   for s in signal: 
                         print s
                         directory = "graviton_"+str(int(mass))+"_"+str(s)+"/"
                         print directory
-                        filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".123456.root"                 
+                        filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".root"                 
+#                        filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".123456.root"                 
                         ldist = getLimit(directory+filename)
                         print ldist                                         
                         print numpy.mean(ldist)                  
-                        g.SetPoint(i,s,numpy.mean(ldist))                                          
-                        g.SetPointError(i,1,numpy.std(ldist))                                         
+                        g.SetPoint(i,numpy.mean(ldist),s)                                          
+                        g.SetPointError(i,numpy.std(ldist),1)                                         
+                        # g.SetPoint(i,s,numpy.mean(ldist))                                          
+                        # g.SetPointError(i,1,numpy.std(ldist))                                         
                         i+=1                                          
             if not (options.expSig==""):                                                
                   for filename in os.listdir(os.getcwd()):                                                      
