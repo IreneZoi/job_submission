@@ -67,8 +67,8 @@ if __name__=="__main__":
                         print s
                         directory = res+"_"+str(int(mass))+"_"+str(s)+"/"
                         print directory
-                        filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".root"                 
-#                        filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".123456.root"                 
+#                        filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".root"                 
+                        filename = "higgsCombineTest.ProfileLikelihood.mH"+str(int(mass))+".123456.root"                 
                         ldist = getLimit(directory+filename)
                         print ldist                                         
                         print numpy.mean(ldist)                  
